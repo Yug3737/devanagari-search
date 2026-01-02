@@ -1,0 +1,32 @@
+{
+    "name": "PDF Devanagari Search",
+    "version": "1.0",
+    "description": "Type Hindi in English and get Devanagari output in a popup.",
+    "manifest_version": 3,
+    "action":{
+        "default_popup": "popup.html",
+        "default_title": "PDF Devanagari Search"
+    },
+    "permissions": ["scripting", "activeTab"],
+    "host_permissions": [
+        "file:///*",
+        "http://*/*",
+        "https://*/*"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*/*.pdf",
+                "file:///*"
+            ],
+            "js": ["pdf.min.js", "content.js"],
+            "run_at": "document_idle"
+        }
+    ],
+    "web_accessible_resources":[
+        {
+            "resources":[],
+            "matches":["<all_urls>"]
+        }
+    ]
+}

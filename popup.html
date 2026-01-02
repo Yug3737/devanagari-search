@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Hindi Transliterator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      width: 300px;
+      padding: 10px;
+    }
+    input, button {
+      width: 100%;
+      padding: 8px;
+      font-size: 16px;
+      margin: 5px 0;
+    }
+    #output {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #333;
+      min-height: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h3>Hindi Transliterator</h3>
+  <input id="inputText" placeholder="A Hindi word in English" />
+  <button id="searchBtn">Transliterate</button>
+  <button id="clearBtn">Clear</button>
+  <!-- select will display possible phonetic interpretations of the user's word -->
+  <select name="IASTOptions" id="IASTOptions"></select>
+  <div id="output"></div>
+  <div id="error"></div>
+  
+
+  <script src="sanscript.min.js"></script>
+  <script src="pdf.min.js"></script>
+  <script src="popup.js"></script>
+  <!-- <script src="content.js"></script> -->
+</body>
+</html>
