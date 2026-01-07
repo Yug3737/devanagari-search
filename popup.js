@@ -2,6 +2,11 @@
 // authors: Yug Patel
 // last modified: 12/28/2025
 
+import fs from 'fs/promises';
+
+import { createWorker } from 'tesseract.js';
+import { exec } from 'child_process';
+
 console.log("popup.js is loaded");
 
 const input = document.getElementById('inputText');
@@ -17,11 +22,25 @@ console.log(test);
 let inputText = '';
 let outputText = '';
 
+function renderPDFAsImages(){
+    exec(
+        'pdftoppm -png -r 300 "input.pdf" "pages/page',
+        (err, stdout, stderr) => {
+            if(err){
+                console.error("Poppler error", err);
+                return;
+            }
+            console.log("Pages rendered successfully");
+        }
+    );
+}
+
 function getPossibleIASTCandidates(input){
     input = input.toLowerCase().trim();
     const letters = input.split("");
     
     const rules = {
+        // paartha, IAST = p(abar)rtha
         a:["a", "ā"],
         e: ["e"], // check for e bar
         i: ["i", "ī"],
@@ -54,6 +73,7 @@ function getPossibleIASTCandidates(input){
     });
         
 }
+// [partha, p(abar)tha, paartha, p(abar)(abar)tha, p(abar)rth(abar)]
 
 function filterIASTCandidates(candidates){
     // valid word endings
@@ -65,6 +85,27 @@ function filterIASTCandidates(candidates){
         }
     }
     return res;
+}
+
+async function computePagewiseOCRWithTesseract(filePath){
+    const worker = await createWorker("san+hin");
+    try{
+        await worker.reinitialize("san+hin");
+        
+        await worker.setParameters({
+            tessedit_pageseg_mode: "6" // PSM 11 is for extracting as much text as possible with no particular order
+        });
+
+        const result = await worker.recognize(filePath);
+        
+        const text = result.data.text;
+        await fs.writeFile("output_page_sanskrit.txt", text);
+        console.log(text);
+        
+        return text;
+    } finally{
+        await worker.terminate();
+    }
 }
 
 input.addEventListener('blur', () =>{
@@ -95,3 +136,8 @@ clearBtn.addEventListener('click', ()=>{
     input.value = '';
     output.textContent = '';
 });
+
+function main(){
+    const word = "pārtha";
+    getPossibleIASTCandidates(word);
+}
