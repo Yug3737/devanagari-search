@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
+import Tesseract, { createWorker } from "tesseract.js";
 
 const filePath1 = "pdfs/06_Chapter_Sanskrit.pdf";
 const filePath2 = "pdfs/Book 6 Mausal-parva.pdf";
@@ -20,6 +21,7 @@ async function loadPdf(filePath) {
   }
   return pdf;
 }
+
 async function findWord(word, filePath) {
   let pdf = loadPdf(filePath2);
   // const pdf = pdfjsLib.getDocument(filePath).promise;
@@ -41,7 +43,6 @@ async function findWord(word, filePath) {
   console.log(`Found ${matches.length} matches of "${searchWord}" in the PDF.`);
 }
 
-import Tesseract, { createWorker } from "tesseract.js";
 
 let languages = ["eng", "hin", "san"];
 
@@ -51,7 +52,8 @@ async function performOCR(filePath) {
     await worker.reinitialize("san+hin");
 
     await worker.setParameters({
-      tessedit_pageseg_mode: "6", // PSM 11 is for extracting as much text as possible with no particular order
+      preserve_interword_spaces: "1",
+      tessedit_pageseg_mode: "4", // PSM 11 is for extracting as much text as possible with no particular order
     });
 
     const result = await worker.recognize(filePath);
@@ -59,6 +61,16 @@ async function performOCR(filePath) {
     const text = result.data.text;
     await fs.writeFile("output_page_sanskrit.txt", text);
     console.log(text);
+    
+    // console.log(Object.keys(result.data));
+    console.log(result.data);
+
+    const extractedWords = []
+    result.data.words.forEach(w => {
+      extractedWords.push({"text": w.text, "bbox": w.bbox});
+    })
+    
+    fs.writeFile("page_output.json", extractedWords);
 
     return text;
   } finally {
@@ -157,7 +169,10 @@ function main() {
   const word = "paartha";
   // const word = "saṃskṛtam";
   let normalizedWord = normalizeInputWord(word);
-  console.log(getPossibleIASTInterpretations(normalizedWord));
+  // console.log(getPossibleIASTInterpretations(normalizedWord));
+  // 
+  const filePath = "./sanskrit_page_image.png";
+  performOCR(filePath);
 }
 
 main();
